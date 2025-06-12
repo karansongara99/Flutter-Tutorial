@@ -57,10 +57,10 @@ class AboutUsScreen extends StatelessWidget {
                     ),
                   ),
                   SizedBox(height: 8),
-                  Text(
-                    "v1.7",
-                    style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
-                  ),
+                  // Text(
+                  //   "v1.7",
+                  //   style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+                  // ),
                   SizedBox(height: 32),
                 ],
               ),

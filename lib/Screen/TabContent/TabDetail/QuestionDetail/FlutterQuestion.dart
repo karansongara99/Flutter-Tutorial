@@ -115,7 +115,7 @@ class _FlutterQuestionState extends State<FlutterQuestion> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Flutter Questions", style: TextStyle(color: Colors.white)),
+        title: Text("Flutter Interview Questions", style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.blue.shade900,
         elevation: 0,
         iconTheme: IconThemeData(color: Colors.white),

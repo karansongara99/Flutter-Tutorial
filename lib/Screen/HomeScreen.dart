@@ -61,11 +61,7 @@ class _HomeScreenState extends State<HomeScreen>
               title: Text('Share'),
               onTap: () {},
             ),
-            ListTile(
-              leading: Icon(Icons.logout),
-              title: Text('Logout'),
-              onTap: () {},
-            ),
+
           ],
         ),
       ),

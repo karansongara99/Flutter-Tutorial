@@ -7,11 +7,14 @@ class FlutterQuiz extends StatefulWidget {
   State<FlutterQuiz> createState() => _FlutterQuizState();
 }
 
-class _FlutterQuizState extends State<FlutterQuiz> {
+class _FlutterQuizState extends State<FlutterQuiz>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _scoreAnimation;
+  late Animation<double> _scaleAnimation;
   int _currentQuestionIndex = 0;
   int _score = 0;
   bool _showScore = false;
-  int _lastScore = 0;
   int? _selectedOption;
 
   final List<Map<String, dynamic>> _questions = [
@@ -41,15 +44,12 @@ class _FlutterQuizState extends State<FlutterQuiz> {
       'correctAnswer': 0,
     },
     {
-      'question': 'Which widget is used to create a scrollable list in Flutter?',
-      'options': [
-        'Column',
-        'Row',
-        'ListView',
-        'Container',
-      ],
+      'question':
+          'Which widget is used to create a scrollable list in Flutter?',
+      'options': ['Column', 'Row', 'ListView', 'Container'],
       'correctAnswer': 2,
-    },{
+    },
+    {
       'question': 'What does the hot reload feature in Flutter do?',
       'options': [
         'Restarts the app completely',
@@ -58,16 +58,14 @@ class _FlutterQuizState extends State<FlutterQuiz> {
         'Only updates the Dart file',
       ],
       'correctAnswer': 1,
-    },{
-      'question': 'In Flutter, which widget is used for adding padding around another widget?',
-      'options': [
-        'Container',
-        'SizedBox',
-        'Padding',
-        'Scaffold',
-      ],
+    },
+    {
+      'question':
+          'In Flutter, which widget is used for adding padding around another widget?',
+      'options': ['Container', 'SizedBox', 'Padding', 'Scaffold'],
       'correctAnswer': 2,
-    },{
+    },
+    {
       'question': 'What is the main advantage of Flutter?',
       'options': [
         'Cross-platform development',
@@ -76,17 +74,16 @@ class _FlutterQuizState extends State<FlutterQuiz> {
         'Requires separate codebases',
       ],
       'correctAnswer': 0,
-    },{
-      'question': 'Which widget is typically used as the top-level layout for a Flutter app screen?',
-      'options': [
-        'SafeArea',
-        'AppBar',
-        'Scaffold',
-        'MaterialApp',
-      ],
+    },
+    {
+      'question':
+          'Which widget is typically used as the top-level layout for a Flutter app screen?',
+      'options': ['SafeArea', 'AppBar', 'Scaffold', 'MaterialApp'],
       'correctAnswer': 2,
-    },{
-      'question': 'What is the purpose of the pubspec.yaml file in a Flutter project?',
+    },
+    {
+      'question':
+          'What is the purpose of the pubspec.yaml file in a Flutter project?',
       'options': [
         'To write Dart code',
         'To manage project dependencies and assets',
@@ -94,16 +91,14 @@ class _FlutterQuizState extends State<FlutterQuiz> {
         'To manage iOS-specific code',
       ],
       'correctAnswer': 1,
-    },{
-      'question': 'Which widget would you use to show a simple dialog in Flutter?',
-      'options': [
-        'AlertDialog',
-        'Snack bar',
-        'DialogBox',
-        'BottomSheet',
-      ],
+    },
+    {
+      'question':
+          'Which widget would you use to show a simple dialog in Flutter?',
+      'options': ['AlertDialog', 'Snack bar', 'DialogBox', 'BottomSheet'],
       'correctAnswer': 0,
-    },{
+    },
+    {
       'question': 'Which command is used to create a new Flutter project?',
       'options': [
         'flutter new',
@@ -136,10 +131,48 @@ class _FlutterQuizState extends State<FlutterQuiz> {
       } else {
         setState(() {
           _showScore = true;
-          _lastScore = _score;
         });
       }
     });
+  }
+
+  String _getPerformanceMessage() {
+    double percentage = _score / _questions.length * 100;
+    if (percentage >= 90) return "Excellent!";
+    if (percentage >= 70) return "Good Job!";
+    if (percentage >= 50) return "Nice Try!";
+    return "Keep Practicing!";
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: Duration(milliseconds: 1500),
+      vsync: this,
+    );
+
+    _scoreAnimation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Interval(0.0, 0.8, curve: Curves.easeOut),
+      ),
+    );
+
+    _scaleAnimation = Tween<double>(begin: 0.3, end: 1).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Interval(0.2, 1.0, curve: Curves.elasticOut),
+      ),
+    );
+
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   void _resetQuiz() {
@@ -311,7 +344,7 @@ class _FlutterQuizState extends State<FlutterQuiz> {
                             ),
                             child: Center(
                               child: Text(
-                                String.fromCharCode(index),
+                                String.fromCharCode((65 + index).toInt()), // A, B, C, D based on index
                                 style: TextStyle(
                                   color:
                                       isSelected
@@ -352,75 +385,135 @@ class _FlutterQuizState extends State<FlutterQuiz> {
   }
 
   Widget _buildScoreScreen() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Score Display
-            Container(
-              width: 200,
-              height: 200,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.blue.shade900,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 10,
-                    offset: Offset(0, 5),
+    _animationController.forward();
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.blue.shade900, Colors.blue.shade700],
+        ),
+      ),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Score Display
+              ScaleTransition(
+                scale: _scaleAnimation,
+                child: Container(
+                  width: 250,
+                  height: 250,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 15,
+                        offset: Offset(0, 8),
+                        spreadRadius: 3,
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "Score",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        FadeTransition(
+                          opacity: _scoreAnimation,
+                          child: Text(
+                            "Your Score",
+                            style: TextStyle(
+                              color: Colors.blue.shade900,
+                              fontSize: 28,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 15),
+                        FadeTransition(
+                          opacity: _scoreAnimation,
+                          child: Text(
+                            "$_score/${_questions.length}",
+                            style: TextStyle(
+                              color: Colors.blue.shade900,
+                              fontSize: 56,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 10),
+                        FadeTransition(
+                          opacity: _scoreAnimation,
+                          child: Text(
+                            "${(_score / _questions.length * 100).toStringAsFixed(0)}%",
+                            style: TextStyle(
+                              color: Colors.blue.shade700,
+                              fontSize: 24,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    SizedBox(height: 10),
-                    Text(
-                      "$_score/${_questions.length}",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 48,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
-            ),
-            SizedBox(height: 40),
-            // Last Score
-            if (_lastScore > 0)
-              ElevatedButton(
-                onPressed: _resetQuiz,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue.shade900,
-                  padding: EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  elevation: 4,
-                ),
+              SizedBox(height: 50),
+              // Performance Message
+              FadeTransition(
+                opacity: _scoreAnimation,
                 child: Text(
-                  "Restart Quiz",
+                  _getPerformanceMessage(),
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 0.5,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              SizedBox(height: 40),
+              // Restart Button
+              ScaleTransition(
+                scale: _scaleAnimation,
+                child: ElevatedButton(
+                  onPressed: () {
+                    _resetQuiz();
+                    _animationController.reset();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(horizontal: 50, vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    elevation: 8,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.replay_rounded, color: Colors.blue.shade900),
+                      SizedBox(width: 10),
+                      Text(
+                        "Try Again",
+                        style: TextStyle(
+                          color: Colors.blue.shade900,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-          ],
+            ],
+          ),
         ),
       ),
     );

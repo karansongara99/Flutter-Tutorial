@@ -7,11 +7,14 @@ class DartQuiz extends StatefulWidget {
   State<DartQuiz> createState() => _DartQuizState();
 }
 
-class _DartQuizState extends State<DartQuiz> {
+class _DartQuizState extends State<DartQuiz>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _scoreAnimation;
+  late Animation<double> _scaleAnimation;
   int _currentQuestionIndex = 0;
   int _score = 0;
   bool _showScore = false;
-  int _lastScore = 0;
   int? _selectedOption;
 
   final List<Map<String, dynamic>> _questions = [
@@ -37,13 +40,13 @@ class _DartQuizState extends State<DartQuiz> {
     },
     {
       'question':
-          ' What is the default value of an uninitialized variable in Dart?',
+      ' What is the default value of an uninitialized variable in Dart?',
       'options': ['0', 'null', 'undefined', 'false'],
       'correctAnswer': 1,
     },
     {
       'question':
-          'Which of the following is a valid way to create a list in Dart?',
+      'Which of the following is a valid way to create a list in Dart?',
       'options': [
         'List list = [1,2,3];',
         'list = new List();',
@@ -54,7 +57,7 @@ class _DartQuizState extends State<DartQuiz> {
     },
     {
       'question':
-          ' Which of the following types are built-in data types in Dart?',
+      ' Which of the following types are built-in data types in Dart?',
       'options': ['int', 'double', 'String', 'All of the above'],
       'correctAnswer': 3,
     },
@@ -70,7 +73,7 @@ class _DartQuizState extends State<DartQuiz> {
     },
     {
       'question':
-          ' Which of these is the correct syntax to create a named function in Dart?',
+      ' Which of these is the correct syntax to create a named function in Dart?',
       'options': [
         'function myFunction() {}',
         'def myFunction() {}',
@@ -91,7 +94,7 @@ class _DartQuizState extends State<DartQuiz> {
     },
     {
       'question':
-          'In Dart, which collection is ordered and allows duplicate elements?',
+      'In Dart, which collection is ordered and allows duplicate elements?',
       'options': ['Set', 'Map', 'List', 'Queue'],
       'correctAnswer': 2,
     },
@@ -118,10 +121,48 @@ class _DartQuizState extends State<DartQuiz> {
       } else {
         setState(() {
           _showScore = true;
-          _lastScore = _score;
         });
       }
     });
+  }
+
+  String _getPerformanceMessage() {
+    double percentage = _score / _questions.length * 100;
+    if (percentage >= 90) return "Excellent!";
+    if (percentage >= 70) return "Good Job!";
+    if (percentage >= 50) return "Nice Try!";
+    return "Keep Practicing!";
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: Duration(milliseconds: 1500),
+      vsync: this,
+    );
+
+    _scoreAnimation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Interval(0.0, 0.8, curve: Curves.easeOut),
+      ),
+    );
+
+    _scaleAnimation = Tween<double>(begin: 0.3, end: 1).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Interval(0.2, 1.0, curve: Curves.elasticOut),
+      ),
+    );
+
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   void _resetQuiz() {
@@ -237,7 +278,7 @@ class _DartQuizState extends State<DartQuiz> {
             SizedBox(height: 30),
             // Options
             ..._questions[_currentQuestionIndex]['options'].asMap().entries.map(
-              (entry) {
+                  (entry) {
                 final index = entry.key;
                 final option = entry.value;
                 final isSelected = _selectedOption == index;
@@ -247,9 +288,9 @@ class _DartQuizState extends State<DartQuiz> {
                   padding: const EdgeInsets.only(bottom: 16.0),
                   child: InkWell(
                     onTap:
-                        _selectedOption == null
-                            ? () => _answerQuestion(index)
-                            : null,
+                    _selectedOption == null
+                        ? () => _answerQuestion(index)
+                        : null,
                     borderRadius: BorderRadius.circular(15),
                     child: Container(
                       padding: EdgeInsets.symmetric(
@@ -258,17 +299,17 @@ class _DartQuizState extends State<DartQuiz> {
                       ),
                       decoration: BoxDecoration(
                         color:
-                            isSelected
-                                ? (isCorrect
-                                    ? Colors.green.shade50
-                                    : Colors.red.shade50)
-                                : Colors.white,
+                        isSelected
+                            ? (isCorrect
+                            ? Colors.green.shade50
+                            : Colors.red.shade50)
+                            : Colors.white,
                         borderRadius: BorderRadius.circular(15),
                         border: Border.all(
                           color:
-                              isSelected
-                                  ? (isCorrect ? Colors.green : Colors.red)
-                                  : Colors.blue.shade900,
+                          isSelected
+                              ? (isCorrect ? Colors.green : Colors.red)
+                              : Colors.blue.shade900,
                           width: 2,
                         ),
                         boxShadow: [
@@ -286,19 +327,19 @@ class _DartQuizState extends State<DartQuiz> {
                             height: 30,
                             decoration: BoxDecoration(
                               color:
-                                  isSelected
-                                      ? (isCorrect ? Colors.green : Colors.red)
-                                      : Colors.blue.shade50,
+                              isSelected
+                                  ? (isCorrect ? Colors.green : Colors.red)
+                                  : Colors.blue.shade50,
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Center(
                               child: Text(
-                                String.fromCharCode(index),
+                                String.fromCharCode((65 + index).toInt()), // A, B, C, D based on index
                                 style: TextStyle(
                                   color:
-                                      isSelected
-                                          ? Colors.white
-                                          : Colors.blue.shade900,
+                                  isSelected
+                                      ? Colors.white
+                                      : Colors.blue.shade900,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -334,75 +375,135 @@ class _DartQuizState extends State<DartQuiz> {
   }
 
   Widget _buildScoreScreen() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Score Display
-            Container(
-              width: 200,
-              height: 200,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.blue.shade900,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 10,
-                    offset: Offset(0, 5),
+    _animationController.forward();
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.blue.shade900, Colors.blue.shade700],
+        ),
+      ),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Score Display
+              ScaleTransition(
+                scale: _scaleAnimation,
+                child: Container(
+                  width: 250,
+                  height: 250,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 15,
+                        offset: Offset(0, 8),
+                        spreadRadius: 3,
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "Score",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        FadeTransition(
+                          opacity: _scoreAnimation,
+                          child: Text(
+                            "Your Score",
+                            style: TextStyle(
+                              color: Colors.blue.shade900,
+                              fontSize: 28,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 15),
+                        FadeTransition(
+                          opacity: _scoreAnimation,
+                          child: Text(
+                            "$_score/${_questions.length}",
+                            style: TextStyle(
+                              color: Colors.blue.shade900,
+                              fontSize: 56,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 10),
+                        FadeTransition(
+                          opacity: _scoreAnimation,
+                          child: Text(
+                            "${(_score / _questions.length * 100).toStringAsFixed(0)}%",
+                            style: TextStyle(
+                              color: Colors.blue.shade700,
+                              fontSize: 24,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    SizedBox(height: 10),
-                    Text(
-                      "$_score/${_questions.length}",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 48,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
-            ),
-            SizedBox(height: 40),
-            // Last Score
-            if (_lastScore > 0)
-              ElevatedButton(
-                onPressed: _resetQuiz,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue.shade900,
-                  padding: EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  elevation: 4,
-                ),
+              SizedBox(height: 50),
+              // Performance Message
+              FadeTransition(
+                opacity: _scoreAnimation,
                 child: Text(
-                  "Restart Quiz",
+                  _getPerformanceMessage(),
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 0.5,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              SizedBox(height: 40),
+              // Restart Button
+              ScaleTransition(
+                scale: _scaleAnimation,
+                child: ElevatedButton(
+                  onPressed: () {
+                    _resetQuiz();
+                    _animationController.reset();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(horizontal: 50, vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    elevation: 8,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.replay_rounded, color: Colors.blue.shade900),
+                      SizedBox(width: 10),
+                      Text(
+                        "Try Again",
+                        style: TextStyle(
+                          color: Colors.blue.shade900,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-          ],
+            ],
+          ),
         ),
       ),
     );

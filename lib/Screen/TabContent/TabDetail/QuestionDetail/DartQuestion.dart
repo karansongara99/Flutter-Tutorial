@@ -109,7 +109,7 @@ class _DartQuestionState extends State<DartQuestion> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Dart Questions", style: TextStyle(color: Colors.white)),
+        title: Text("Dart Interview Questions", style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.blue.shade900,
         elevation: 0,
         iconTheme: IconThemeData(color: Colors.white),
